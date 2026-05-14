@@ -605,7 +605,7 @@ function evaluateWriting() {
   const checked = $$("[data-writing-check]:checked");
   const manualScore = checked.reduce((sum, input) => sum + Number(input.dataset.points), 0);
   const words = answer.split(/\s+/).filter(Boolean);
-  const lengthBonus = words.length >= 150 ? 2 : words.length >= 100 ? 1 : 0;
+  const lengthBonus = words.length >= 150 ? 2 : words.length >= 120 ? 1 : 0;
   const rawScore = manualScore + lengthBonus;
   const score = clamp(Math.round((rawScore / 24) * 20), 0, 20);
   const missing = $$("[data-writing-check]:not(:checked)").slice(0, 5).map((input) => input.nextElementSibling.textContent);
@@ -718,7 +718,7 @@ function bindEvents() {
 
   $("#startQuizBtn").addEventListener("click", buildQuizSession);
   $("#nextQuizBtn").addEventListener("click", nextQuiz);
-  $("#skipQuizBtn").addEventListener("click", () => answerQuiz(-1));
+  $("#skipQuizBtn").addEventListener("click", skipQuiz);
   $("#quizAnswers").addEventListener("click", (event) => {
     const button = event.target.closest("[data-answer]");
     if (button) answerQuiz(Number(button.dataset.answer));
