@@ -368,7 +368,7 @@ function answerQuiz(index) {
     subject: question.m,
     theme: question.t,
     question: question.q,
-    selected: question.a[index] || "Passée",
+    selected: question.a[index],
     answer: question.a[question.c],
     explanation: question.e,
     correct: isCorrect,
@@ -391,6 +391,39 @@ function answerQuiz(index) {
   renderQuizCorrections();
 }
 
+function skipQuiz() {
+  if (!quizSession || quizSession.answered) return;
+  quizSession.answered = true;
+  const question = quizSession.questions[quizSession.index];
+
+  $$("#quizAnswers button").forEach((button) => {
+    button.disabled = true;
+  });
+
+  const correction = {
+    subject: question.m,
+    theme: question.t,
+    question: question.q,
+    selected: "Passée",
+    answer: question.a[question.c],
+    explanation: question.e,
+    correct: null,
+    at: new Date().toISOString(),
+  };
+  quizSession.corrections.push(correction);
+  save();
+
+  const feedback = $("#quizFeedback");
+  feedback.hidden = false;
+  feedback.innerHTML = `
+    <strong>Question passée</strong>
+    <p>Bonne réponse : ${question.a[question.c]}</p>
+    <p>${question.e}</p>
+  `;
+  $("#nextQuizBtn").disabled = false;
+  renderQuizCorrections();
+}
+
 function updateSubjectScore(subject, correct) {
   state.subjectScores[subject] ||= { correct: 0, total: 0 };
   state.subjectScores[subject].total += 1;
@@ -400,7 +433,7 @@ function updateSubjectScore(subject, correct) {
 function nextQuiz() {
   if (!quizSession) return;
   if (!quizSession.answered) {
-    answerQuiz(-1);
+    skipQuiz();
     return;
   }
   if (quizSession.index < quizSession.questions.length - 1) {
@@ -494,6 +527,8 @@ function renderFlashcards() {
 
   const global = flashMasteryStats();
   $("#flashMastery").textContent = `${global.pct}%`;
+  const missedIds = new Set(state.flash.missed);
+  const missedInDeck = flashDeck.filter((card) => missedIds.has(flashId(card))).length;
   $("#flashStats").innerHTML = SUBJECTS.map((subject) => {
     const stats = flashMasteryStats(subject);
     return `
@@ -506,7 +541,7 @@ function renderFlashcards() {
   }).join("") + `
     <div class="mastery-item">
       <span class="badge neutral">Pile ratées</span>
-      <strong>${state.flash.missed.length}</strong>
+      <strong>${missedInDeck}</strong>
     </div>
   `;
 }
@@ -570,7 +605,7 @@ function evaluateWriting() {
   const checked = $$("[data-writing-check]:checked");
   const manualScore = checked.reduce((sum, input) => sum + Number(input.dataset.points), 0);
   const words = answer.split(/\s+/).filter(Boolean);
-  const lengthBonus = words.length >= 120 ? 2 : answer.length >= 350 ? 1 : 0;
+  const lengthBonus = words.length >= 150 ? 2 : words.length >= 100 ? 1 : 0;
   const rawScore = manualScore + lengthBonus;
   const score = clamp(Math.round((rawScore / 24) * 20), 0, 20);
   const missing = $$("[data-writing-check]:not(:checked)").slice(0, 5).map((input) => input.nextElementSibling.textContent);
