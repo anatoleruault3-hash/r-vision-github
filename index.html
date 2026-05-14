@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plateforme de révision BTS NDRC</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">N</div>
+        <div>
+          <p class="eyebrow">BTS NDRC</p>
+          <h1>Révisions écrits</h1>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Navigation principale">
+        <button class="nav-btn active" data-page="home"><span>⌂</span>Accueil</button>
+        <button class="nav-btn" data-page="planning"><span>◷</span>Planning</button>
+        <button class="nav-btn" data-page="cours"><span>▦</span>Connaissances</button>
+        <button class="nav-btn" data-page="quiz"><span>?</span>Quiz</button>
+        <button class="nav-btn" data-page="flashcards"><span>◫</span>Flashcards</button>
+        <button class="nav-btn" data-page="redaction"><span>✎</span>Rédaction</button>
+        <button class="nav-btn" data-page="exam"><span>◇</span>Mode examen</button>
+        <button class="nav-btn" data-page="methodes"><span>≡</span>Méthodes</button>
+        <button class="nav-btn" data-page="glossaire"><span>A</span>Glossaire</button>
+        <button class="nav-btn" data-page="progression"><span>%</span>Progression</button>
+      </nav>
+
+      <div class="sidebar-panel">
+        <span class="mini-label">Session</span>
+        <strong id="sidebarProgress">0%</strong>
+        <div class="meter"><span id="sidebarProgressBar"></span></div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="page active" id="home">
+        <header class="page-header hero-header">
+          <div>
+            <p class="eyebrow">Tableau de bord</p>
+            <h2>Réviser vite, avec le bon mode au bon moment.</h2>
+          </div>
+          <div class="hero-score">
+            <span id="homeGlobalPercent">0%</span>
+            <small>planning</small>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <article class="stat-card accent-cejm">
+            <span class="mini-label">Progression planning</span>
+            <strong id="globalPercent">0%</strong>
+            <div class="meter"><span id="globalBar"></span></div>
+          </article>
+          <article class="stat-card accent-culture">
+            <span class="mini-label">Meilleur quiz</span>
+            <strong id="bestScore">—</strong>
+            <small>score sauvegardé</small>
+          </article>
+          <article class="stat-card accent-digital">
+            <span class="mini-label">Maîtrise flashcards</span>
+            <strong id="flashMasteryHome">0%</strong>
+            <small id="flashMasteryDetail">0 carte connue</small>
+          </article>
+          <article class="stat-card">
+            <span class="mini-label">Base disponible</span>
+            <strong id="baseCount">—</strong>
+            <small>notions, questions, cas</small>
+          </article>
+        </div>
+
+        <div class="split-layout">
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Prochaine tâche</h3>
+              <span class="badge neutral">priorité</span>
+            </div>
+            <div id="nextTask" class="next-task"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Accès rapide</h3>
+            </div>
+            <div class="quick-grid">
+              <button class="quick-card subject-cejm" data-subject-shortcut="CEJM">CEJM</button>
+              <button class="quick-card subject-culture" data-subject-shortcut="Culture générale">Culture générale</button>
+              <button class="quick-card subject-digital" data-subject-shortcut="Digitalisation">Digitalisation</button>
+            </div>
+          </article>
+        </div>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Scores par matière</h3>
+          </div>
+          <div class="subject-score-grid" id="homeSubjectScores"></div>
+        </section>
+      </section>
+
+      <section class="page" id="planning">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Organisation</p>
+            <h2>Planning chronologique</h2>
+          </div>
+          <button class="btn ghost" id="resetTasksBtn">Réinitialiser</button>
+        </header>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <section class="page" id="cours">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Base de connaissances</p>
+            <h2>Chapitres et notions</h2>
+          </div>
+          <div class="toolbar">
+            <input id="courseSearch" type="search" placeholder="Rechercher une notion">
+            <select id="courseFilter" aria-label="Filtrer les cours">
+              <option value="all">Toutes matières</option>
+              <option value="CEJM">CEJM</option>
+              <option value="Culture générale">Culture générale</option>
+              <option value="Digitalisation">Digitalisation</option>
+            </select>
+          </div>
+        </header>
+        <div class="filter-row" id="courseSubjectFilters"></div>
+        <div class="chapter-grid" id="courseList"></div>
+      </section>
+
+      <section class="page" id="quiz">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Entraînement</p>
+            <h2>Quiz intelligent</h2>
+          </div>
+          <div class="toolbar">
+            <select id="quizSubject" aria-label="Matière du quiz">
+              <option value="all">Toutes matières</option>
+              <option value="CEJM">CEJM</option>
+              <option value="Culture générale">Culture générale</option>
+              <option value="Digitalisation">Digitalisation</option>
+            </select>
+            <select id="quizMode" aria-label="Mode du quiz">
+              <option value="quick">10 questions rapides</option>
+              <option value="exam">Mode examen</option>
+              <option value="all">Banque complète</option>
+            </select>
+            <button class="btn primary" id="startQuizBtn">Lancer</button>
+          </div>
+        </header>
+
+        <div class="quiz-layout">
+          <article class="panel quiz-panel">
+            <div class="meter"><span id="quizProgress"></span></div>
+            <div class="quiz-meta">
+              <span id="quizCounter">Question 1</span>
+              <span class="badge neutral" id="quizTheme"></span>
+            </div>
+            <h3 id="quizQuestion"></h3>
+            <div class="answer-list" id="quizAnswers"></div>
+            <div class="feedback" id="quizFeedback" hidden></div>
+            <div class="button-row">
+              <button class="btn ghost" id="skipQuizBtn">Passer</button>
+              <button class="btn primary" id="nextQuizBtn" disabled>Question suivante</button>
+            </div>
+          </article>
+          <aside class="panel side-panel">
+            <div class="panel-head">
+              <h3>Correction</h3>
+              <span class="badge neutral" id="quizLiveScore">0</span>
+            </div>
+            <div id="quizCorrectionList" class="compact-list"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="flashcards">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Mémorisation</p>
+            <h2>Flashcards</h2>
+          </div>
+          <div class="toolbar">
+            <select id="flashMode" aria-label="Filtrer les flashcards">
+              <option value="all">Toutes</option>
+              <option value="CEJM">CEJM</option>
+              <option value="Culture générale">Culture générale</option>
+              <option value="Digitalisation">Digitalisation</option>
+              <option value="missed">Pile ratées</option>
+            </select>
+            <button class="btn ghost" id="restartFlashBtn">Mélanger</button>
+          </div>
+        </header>
+
+        <div class="flash-layout">
+          <article class="panel flash-panel">
+            <div class="quiz-meta">
+              <span class="badge neutral" id="flashTheme"></span>
+              <span id="flashCounter">Carte 1/1</span>
+            </div>
+            <button class="flashcard" id="flashText" type="button"></button>
+            <div class="button-row">
+              <button class="btn ghost" id="flipFlashBtn">Retourner</button>
+              <button class="btn danger" id="unknownFlashBtn">Je ne sais pas</button>
+              <button class="btn success" id="knownFlashBtn">Je sais</button>
+            </div>
+          </article>
+          <aside class="panel side-panel">
+            <div class="panel-head">
+              <h3>Maîtrise</h3>
+              <span class="badge neutral" id="flashMastery">0%</span>
+            </div>
+            <div id="flashStats" class="mastery-list"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="page" id="redaction">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Rédaction</p>
+            <h2>Sujets rédigés</h2>
+          </div>
+          <select id="caseSelect" aria-label="Choisir un sujet"></select>
+        </header>
+
+        <div class="writing-layout">
+          <article class="panel">
+            <span class="badge neutral" id="caseSubjectBadge">Sujet</span>
+            <h3 id="caseTitle"></h3>
+            <p id="caseText" class="case-text"></p>
+            <h4>Structure attendue</h4>
+            <ol class="structure-list" id="caseStructure"></ol>
+          </article>
+          <article class="panel">
+            <textarea id="caseAnswer" placeholder="Rédige ici ta réponse structurée"></textarea>
+            <div class="evaluation-grid" id="writingChecklist"></div>
+            <div class="button-row">
+              <button class="btn primary" id="evaluateWritingBtn">Évaluer</button>
+              <button class="btn ghost" id="clearWritingBtn">Effacer</button>
+            </div>
+            <div class="feedback" id="writingFeedback" hidden></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="exam">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Jour J</p>
+            <h2>Mode examen</h2>
+          </div>
+        </header>
+        <div class="exam-grid" id="examGrid"></div>
+      </section>
+
+      <section class="page" id="methodes">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Méthodes</p>
+            <h2>Structures à appliquer</h2>
+          </div>
+        </header>
+        <div class="filter-row">
+          <button class="chip active" data-method="cejm">CEJM</button>
+          <button class="chip" data-method="francais">Culture générale</button>
+          <button class="chip" data-method="digital">Digitalisation</button>
+        </div>
+        <div class="method-grid" id="methodContent"></div>
+      </section>
+
+      <section class="page" id="glossaire">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Glossaire</p>
+            <h2>Définitions rapides</h2>
+          </div>
+          <div class="toolbar">
+            <input id="glossarySearch" type="search" placeholder="Rechercher un terme">
+            <select id="glossaryFilter" aria-label="Filtrer le glossaire">
+              <option value="all">Tout</option>
+              <option value="CEJM">CEJM</option>
+              <option value="Culture générale">Culture générale</option>
+              <option value="Digitalisation">Digitalisation</option>
+            </select>
+          </div>
+        </header>
+        <div class="list" id="glossaryList"></div>
+      </section>
+
+      <section class="page" id="progression">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Suivi local</p>
+            <h2>Progression</h2>
+          </div>
+          <button class="btn danger" id="resetAllBtn">Tout remettre à zéro</button>
+        </header>
+        <div class="dashboard-grid">
+          <article class="stat-card"><span class="mini-label">Tâches terminées</span><strong id="doneTasks">0/0</strong></article>
+          <article class="stat-card"><span class="mini-label">Chapitres révisés</span><strong id="reviewedCoursesCount">0</strong></article>
+          <article class="stat-card"><span class="mini-label">Cartes maîtrisées</span><strong id="flashDone">0</strong></article>
+          <article class="stat-card"><span class="mini-label">Erreurs quiz</span><strong id="quizMistakes">0</strong></article>
+        </div>
+        <div class="split-layout">
+          <article class="panel">
+            <div class="panel-head"><h3>Points faibles</h3></div>
+            <div id="weakList" class="compact-list"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h3>Historique quiz</h3></div>
+            <div id="quizHistory" class="compact-list"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
