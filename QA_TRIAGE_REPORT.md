@@ -5,15 +5,15 @@ Périmètre testé :
 - Cas d’usage prioritaire 2 (Réviser en flashcards et retravailler les cartes ratées)
 - Cas d’usage prioritaire 3 (Rédiger et évaluer une réponse type examen)
 
-## Bug 1 — Le bonus de longueur en rédaction sous-valorise certaines réponses concises
+## Bug 1 — Le bonus de longueur en rédaction mélange des seuils en mots et en caractères
 - **Étapes de reproduction**
   1. Ouvrir **Rédaction**.
-  2. Saisir une réponse d’environ 130 mots et de moins de 350 caractères (possible avec des mots courts / une ponctuation compacte).
+  2. Saisir une réponse d’environ 90 à 110 mots, mais d’au moins 350 caractères.
   3. Cliquer sur **Évaluer**.
 - **Résultat attendu**
-  - Le bonus de longueur devrait reposer de manière cohérente sur des seuils en nombre de mots, et 120+ mots devraient obtenir le bonus le plus élevé.
+  - Le bonus de longueur devrait reposer sur des critères homogènes ; une réponse de moins de 120 mots ne devrait pas bénéficier d’un seuil alternatif exprimé en caractères si la longueur est évaluée en mots.
 - **Résultat observé**
-  - La condition secondaire du bonus vérifie `answer.length >= 350` (caractères) au lieu d’un seuil en mots, ce qui rend le calcul incohérent avec le libellé et le premier seuil.
+  - Après le premier seuil `words.length >= 120`, la logique utilise `answer.length >= 350` (caractères), ce qui attribue un bonus selon une unité différente et rend le calcul incohérent avec le premier seuil.
 - **Sévérité** : Moyenne.
 
 ## Bug 2 — Le bouton « Passer » du quiz enregistre immédiatement une erreur
