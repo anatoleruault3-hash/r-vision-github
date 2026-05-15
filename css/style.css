@@ -757,3 +757,306 @@ a { text-decoration: none; color: inherit; }
   .ex-step-actions { flex-direction: column; }
   .ex-step-actions > * { width: 100%; justify-content: center; }
 }
+
+/* ===========================
+   MODAL PRÉNOM
+=========================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 9, 15, 0.88);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: ob-fade-in 0.25s ease;
+}
+
+.modal-overlay.modal-closing {
+  animation: ob-fade-out 0.28s ease forwards;
+}
+
+.modal-card {
+  background: var(--surface2);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 40px 36px 32px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  animation: ob-slide-up 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-deco {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--e1-dim), var(--e3-dim));
+  border: 1px solid var(--e3-border);
+  margin: 0 auto 20px;
+}
+
+.modal-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.modal-subtitle {
+  color: var(--muted);
+  font-size: 0.875rem;
+  margin-bottom: 22px;
+}
+
+.modal-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--e3);
+}
+
+.modal-input.modal-input-error {
+  border-color: #f87171;
+  animation: ob-shake 0.35s ease;
+}
+
+.modal-btn {
+  width: 100%;
+  background: var(--e3);
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  font-family: inherit;
+}
+
+.modal-btn:hover  { opacity: 0.88; }
+.modal-btn:active { transform: scale(0.98); }
+
+/* ===========================
+   GUIDE INTERACTIF
+=========================== */
+
+.guide-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 9, 15, 0.88);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: ob-fade-in 0.25s ease;
+}
+
+.guide-overlay.modal-closing {
+  animation: ob-fade-out 0.28s ease forwards;
+}
+
+.guide-card {
+  background: var(--surface2);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 32px 30px 24px;
+  max-width: 420px;
+  width: 92%;
+  animation: ob-slide-up 0.3s ease;
+}
+
+.guide-greeting {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+
+.guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.guide-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 15px;
+  animation: ob-slide-in 0.35s ease both;
+}
+
+.guide-step-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.guide-step-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.guide-step-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.guide-step-desc kbd {
+  background: var(--surface2);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+  font-family: inherit;
+}
+
+.guide-btn {
+  width: 100%;
+  background: linear-gradient(90deg, var(--e1), var(--e3));
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+
+.guide-btn:hover { opacity: 0.88; }
+
+.guide-skip {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px;
+  font-family: inherit;
+}
+
+.guide-skip:hover { color: var(--text); }
+
+/* ===========================
+   WIDGET "ILS CHARBONNENT"
+=========================== */
+
+.charbonnent-widget {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+
+.charbonnent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.charbonnent-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--muted);
+}
+
+.charbonnent-count {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.charbonnent-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.nom-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 4px 13px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.nom-chip-me {
+  background: var(--e3-dim);
+  border-color: var(--e3-border);
+  color: var(--e3);
+  font-weight: 700;
+}
+
+/* Lien "Revoir le guide" */
+.guide-trigger {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.guide-trigger:hover { color: var(--text); }
+
+/* ===========================
+   ANIMATIONS ONBOARDING
+=========================== */
+
+@keyframes ob-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ob-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+@keyframes ob-slide-up {
+  from { transform: translateY(18px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes ob-slide-in {
+  from { transform: translateX(-10px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+@keyframes ob-shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-7px); }
+  75%       { transform: translateX(7px); }
+}

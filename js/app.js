@@ -83,11 +83,19 @@ var App = (function () {
         '</div>';
     });
 
+    var nomActuel = typeof Onboarding !== 'undefined' ? Onboarding.getNom() : null;
+
     _setRoot(
       '<header class="home-header">' +
         '<h1 class="app-title">Révision BTS NDRC</h1>' +
-        '<p class="app-subtitle">3 épreuves · Flashcards + Exercices guidés</p>' +
+        '<p class="app-subtitle">' +
+          (nomActuel ? 'Salut <strong>' + nomActuel + '</strong> · ' : '') +
+          '3 épreuves · Flashcards + Exercices guidés' +
+          ' · <button class="guide-trigger" id="btn-guide">Guide</button>' +
+        '</p>' +
       '</header>' +
+
+      '<div id="charbonnent-container"></div>' +
 
       '<div class="global-stats">' +
         '<div class="global-stat">' +
@@ -108,6 +116,16 @@ var App = (function () {
         '<button class="btn-reset" id="btn-reset">Réinitialiser la progression</button>' +
       '</div>'
     );
+
+    // Widget "ils charbonnent"
+    if (typeof Onboarding !== 'undefined') {
+      Onboarding.renderWidget(document.getElementById('charbonnent-container'));
+    }
+
+    var btnGuide = document.getElementById('btn-guide');
+    if (btnGuide && typeof Onboarding !== 'undefined') {
+      btnGuide.addEventListener('click', function () { Onboarding.showGuide(); });
+    }
 
     document.getElementById('btn-reset').addEventListener('click', function () {
       if (confirm('Réinitialiser toute la progression ? Cette action est irréversible.')) {
@@ -320,7 +338,4 @@ var App = (function () {
 
 })();
 
-// Lancement au chargement de la page
-document.addEventListener('DOMContentLoaded', function () {
-  App.init();
-});
+// App.init() est appelé par Onboarding.init() dans index.html
