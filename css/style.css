@@ -361,12 +361,12 @@ a { text-decoration: none; color: inherit; }
 .fc-card-wrap {
   perspective: 1200px;
   margin: 20px 0;
-  min-height: 300px;
+  min-height: 360px;
 }
 
 .fc-card {
   width: 100%;
-  min-height: 300px;
+  min-height: 360px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -376,7 +376,7 @@ a { text-decoration: none; color: inherit; }
 .fc-face {
   position: absolute;
   width: 100%;
-  min-height: 300px;
+  min-height: 360px;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   background: var(--surface);
@@ -414,11 +414,66 @@ a { text-decoration: none; color: inherit; }
   color: var(--text);
 }
 .fc-reponse {
-  font-size: 0.9rem;
-  line-height: 1.7;
+  font-size: 0.88rem;
+  line-height: 1.6;
   flex: 1;
-  white-space: pre-line;
+  overflow-y: auto;
   color: var(--text);
+}
+
+/* Liste numérotée dans le verso */
+.fc-reponse .fc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: fc-item;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fc-reponse .fc-list li {
+  counter-increment: fc-item;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  line-height: 1.5;
+}
+.fc-reponse .fc-list li::before {
+  content: counter(fc-item);
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Texte libre */
+.fc-reponse .fc-text { margin: 0; }
+
+/* Terme clé avant " : " */
+.fc-reponse strong {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Exemples discrets */
+.fc-reponse .fc-ex {
+  font-style: italic;
+  font-size: 0.83em;
+  color: var(--muted);
+}
+
+/* Flèche → */
+.fc-reponse .fc-arrow {
+  font-weight: 700;
+  margin: 0 2px;
+  opacity: 0.7;
 }
 
 .btn-flip {

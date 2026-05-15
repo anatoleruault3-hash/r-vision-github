@@ -97,6 +97,48 @@ var FlashcardEngine = (function () {
     }
   }
 
+  // --- Formatage du verso ---
+
+  // Formate le texte brut d'une réponse en HTML lisible
+  function _formatReponse(text) {
+    // Sécurité : échapper les < bruts (> est ok en HTML)
+    text = text.replace(/</g, '&lt;');
+
+    // Détection liste numérotée : commence par "1. " et contient "2. "
+    if (/^1\.\s/.test(text) && /\s2\.\s/.test(text)) {
+      var parts = text.split(/\s+(?=\d+\.\s)/);
+      var lis = parts.map(function (part) {
+        var content = part.replace(/^\d+\.\s*/, '').trim();
+        return content ? '<li>' + _inlineFormat(content) + '</li>' : '';
+      }).filter(Boolean);
+      if (lis.length > 1) {
+        return '<ol class="fc-list">' + lis.join('') + '</ol>';
+      }
+    }
+
+    // Texte libre
+    return '<p class="fc-text">' + _inlineFormat(text) + '</p>';
+  }
+
+  // Applique le formatage inline : termes clés en gras, exemples discrets
+  function _inlineFormat(text) {
+    // Exemples entre parenthèses : (ex : ...)
+    text = text.replace(/\(ex\s*:\s*([^)]+)\)/gi, '<em class="fc-ex">(ex\u00a0: $1)</em>');
+
+    // Exemples standalone : "Ex : phrase."
+    text = text.replace(/\bEx\s*:\s*([^.!?]+[.!?]?)/g, '<em class="fc-ex">Ex\u00a0: $1</em>');
+
+    // Termes clés avant " : " en début de phrase (début ou après ". ")
+    text = text.replace(/(^|\.\s+)([A-ZÀÂÉÈÊÙÎÔÛŒÆ][^:.!?\n]{1,50}) : /g, function (m, prefix, term) {
+      return prefix + '<strong>' + term + '</strong>\u00a0: ';
+    });
+
+    // Flèches → plus visibles
+    text = text.replace(/→/g, '<span class="fc-arrow">→</span>');
+
+    return text;
+  }
+
   // --- Rendu d'une carte ---
 
   function _render() {
@@ -126,7 +168,7 @@ var FlashcardEngine = (function () {
           '</div>' +
           '<div class="fc-face fc-back">' +
             '<div class="fc-categorie">' + card.categorie + '</div>' +
-            '<div class="fc-reponse">' + card.reponse + '</div>' +
+            '<div class="fc-reponse">' + _formatReponse(card.reponse) + '</div>' +
             '<div class="fc-rating">' +
               '<span class="fc-rating-label">Comment tu t\'en es sorti ?</span>' +
               '<div class="fc-rating-btns">' +
