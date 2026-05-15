@@ -1,17 +1,24 @@
-// quiz.js — Moteur de quiz QCM généré depuis les flashcards
-// Dépendances: store.js, flashcard.js chargés avant
+// quiz.js — Moteur de quiz QCM depuis QUIZ_BANK
+// Dépendances: quiz-bank.js chargé avant
 
 var QuizEngine = (function () {
 
-  var _cards       = [];
-  var _epreuve     = '';
-  var _container   = null;
-  var _questions   = [];
+  var _epreuve      = '';
+  var _container    = null;
+  var _bankPool     = []; // questions filtrées par épreuve
+  var _questions    = []; // { q, options, correctIndex }
   var _currentIndex = 0;
-  var _results     = []; // { card, correct, chosenIndex, correctIndex }
+  var _results      = []; // { q, correct, chosenIndex, correctIndex, options }
   var _timerInterval = null;
-  var _timeLeft    = 0;
-  var _keyHandler  = null;
+  var _timeLeft     = 0;
+  var _keyHandler   = null;
+
+  // Mapping épreuve → module QUIZ_BANK
+  var _moduleMap = {
+    'e1': 'Culture générale',
+    'e3': 'CEJM',
+    'e5': 'Digitalisation'
+  };
 
   // --- Utilitaires ---
 
@@ -24,46 +31,20 @@ var QuizEngine = (function () {
     return a;
   }
 
-  // Extraire la première phrase d'une réponse (pour les options QCM)
-  function _firstSentence(text) {
-    text = text.replace(/^\d+\.\s*/, ''); // supprimer préfixe numéroté
-    var m = text.match(/^[^.!?]+[.!?]/);
-    var result = m ? m[0].trim() : text.trim();
-    if (result.length > 160) result = result.slice(0, 157) + '…';
-    return result;
-  }
-
-  // --- Génération des questions QCM ---
-
+  // Construire les questions (a[0] = bonne réponse dans le bank)
   function _buildQuestions(pool, count) {
-    var cards = _shuffle(pool.slice());
-    if (count && cards.length > count) cards = cards.slice(0, count);
+    var items = _shuffle(pool.slice());
+    if (count && items.length > count) items = items.slice(0, count);
 
-    return cards.map(function (card) {
-      // Leurres : autres cartes, même domaine en priorité
-      var sameDomain = pool.filter(function (c) {
-        return c.id !== card.id && c.domaine === card.domaine;
-      });
-      var otherDomain = pool.filter(function (c) {
-        return c.id !== card.id && c.domaine !== card.domaine;
-      });
-      var candidates = _shuffle(sameDomain).concat(_shuffle(otherDomain));
-      var leurres = candidates.slice(0, 3).map(function (c) {
-        return _firstSentence(c.reponse);
-      });
-
-      if (leurres.length < 3) return null;
-
-      var correctText = _firstSentence(card.reponse);
-      var options = _shuffle([correctText].concat(leurres));
-      var correctIndex = options.indexOf(correctText);
-
-      return { card: card, options: options, correctIndex: correctIndex };
-    }).filter(Boolean);
+    return items.map(function (item) {
+      var shuffled = _shuffle(item.a);          // mélanger les réponses
+      var correctIndex = shuffled.indexOf(item.a[0]); // a[0] = toujours la bonne
+      return { q: item, options: shuffled, correctIndex: correctIndex };
+    });
   }
 
-  function _buildByDomaine(domaine) {
-    var filtered = _cards.filter(function (c) { return c.domaine === domaine; });
+  function _buildByTheme(theme) {
+    var filtered = _bankPool.filter(function (item) { return item.t === theme; });
     return _buildQuestions(filtered, null);
   }
 
@@ -72,22 +53,24 @@ var QuizEngine = (function () {
   function _renderModeSelect() {
     _cleanup();
 
-    var domaines = [];
+    var themes = [];
     var seen = {};
-    _cards.forEach(function (c) {
-      if (!seen[c.domaine]) { seen[c.domaine] = true; domaines.push(c.domaine); }
+    _bankPool.forEach(function (item) {
+      if (!seen[item.t]) { seen[item.t] = true; themes.push(item.t); }
     });
 
-    var domainesBtns = domaines.map(function (d) {
-      var count = _cards.filter(function (c) { return c.domaine === d; }).length;
-      return '<button class="quiz-mode-btn" data-domaine="' + d + '">' +
+    var themesBtns = themes.map(function (t) {
+      var count = _bankPool.filter(function (item) { return item.t === t; }).length;
+      return '<button class="quiz-mode-btn" data-theme="' + t + '">' +
         '<span class="quiz-mode-icon">📌</span>' +
         '<div class="quiz-mode-info">' +
-          '<span class="quiz-mode-name">' + d.charAt(0).toUpperCase() + d.slice(1) + '</span>' +
-          '<span class="quiz-mode-count">' + count + ' questions</span>' +
+          '<span class="quiz-mode-name">' + t + '</span>' +
+          '<span class="quiz-mode-count">' + count + ' question' + (count > 1 ? 's' : '') + '</span>' +
         '</div>' +
       '</button>';
     }).join('');
+
+    var total = _bankPool.length;
 
     _container.innerHTML =
       '<div class="quiz-mode-screen">' +
@@ -108,25 +91,36 @@ var QuizEngine = (function () {
             '<span class="quiz-mode-icon">🎓</span>' +
             '<div class="quiz-mode-info">' +
               '<span class="quiz-mode-name">Examen</span>' +
-              '<span class="quiz-mode-count">20 questions · 10 minutes</span>' +
+              '<span class="quiz-mode-count">' + Math.min(20, total) + ' questions · 10 minutes</span>' +
             '</div>' +
           '</button>' +
-          '<div class="quiz-domaines-title">Par domaine</div>' +
-          domainesBtns +
+          '<button class="quiz-mode-btn quiz-mode-featured" id="mode-all">' +
+            '<span class="quiz-mode-icon">📚</span>' +
+            '<div class="quiz-mode-info">' +
+              '<span class="quiz-mode-name">Tout le programme</span>' +
+              '<span class="quiz-mode-count">' + total + ' questions</span>' +
+            '</div>' +
+          '</button>' +
+          '<div class="quiz-domaines-title">Par thème</div>' +
+          themesBtns +
         '</div>' +
       '</div>';
 
     document.getElementById('mode-eclair').addEventListener('click', function () {
-      _questions = _buildQuestions(_cards, 10);
+      _questions = _buildQuestions(_bankPool, 10);
       _startQuiz(false);
     });
     document.getElementById('mode-examen').addEventListener('click', function () {
-      _questions = _buildQuestions(_cards, 20);
+      _questions = _buildQuestions(_bankPool, 20);
       _startQuiz(true);
     });
-    _container.querySelectorAll('[data-domaine]').forEach(function (btn) {
+    document.getElementById('mode-all').addEventListener('click', function () {
+      _questions = _buildQuestions(_bankPool, null);
+      _startQuiz(false);
+    });
+    _container.querySelectorAll('[data-theme]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        _questions = _buildByDomaine(btn.getAttribute('data-domaine'));
+        _questions = _buildByTheme(btn.getAttribute('data-theme'));
         _startQuiz(false);
       });
     });
@@ -139,7 +133,7 @@ var QuizEngine = (function () {
     _results = [];
 
     if (!_questions.length) {
-      _container.innerHTML = '<div class="empty-state">Pas assez de cartes pour générer un quiz.</div>';
+      _container.innerHTML = '<div class="empty-state">Aucune question disponible pour ce mode.</div>';
       return;
     }
 
@@ -187,14 +181,13 @@ var QuizEngine = (function () {
         '<div class="quiz-progress-row">' +
           '<span class="fc-counter">' + (_currentIndex + 1) + ' / ' + _questions.length + '</span>' +
           timerHtml +
-          '<span class="fc-domaine tag-' + _epreuve + '">' + q.card.domaine + '</span>' +
+          '<span class="fc-domaine tag-' + _epreuve + '">' + q.q.t + '</span>' +
         '</div>' +
         '<div class="fc-progress-bar"><div class="fc-progress-fill" style="width:' + pct + '%"></div></div>' +
       '</div>' +
 
       '<div class="quiz-question-card">' +
-        '<div class="fc-categorie">' + q.card.categorie + '</div>' +
-        '<div class="quiz-question-text">' + q.card.question + '</div>' +
+        '<div class="quiz-question-text">' + q.q.q + '</div>' +
       '</div>' +
 
       '<div class="quiz-options" id="quiz-options">' + optionsHtml + '</div>' +
@@ -215,7 +208,13 @@ var QuizEngine = (function () {
     var q = _questions[_currentIndex];
     var correct = chosenIndex === q.correctIndex;
 
-    _results.push({ card: q.card, correct: correct, chosenIndex: chosenIndex, correctIndex: q.correctIndex });
+    _results.push({
+      q: q.q,
+      correct: correct,
+      chosenIndex: chosenIndex,
+      correctIndex: q.correctIndex,
+      options: q.options
+    });
 
     // Feedback visuel sur les boutons
     _container.querySelectorAll('.quiz-option').forEach(function (btn, i) {
@@ -224,18 +223,27 @@ var QuizEngine = (function () {
       else if (i === chosenIndex && !correct) btn.classList.add('quiz-option-wrong');
     });
 
+    var optionsEl = document.getElementById('quiz-options');
+
+    // Explication
+    if (q.q.e) {
+      var explDiv = document.createElement('div');
+      explDiv.className = 'quiz-explication';
+      explDiv.innerHTML = '<span class="quiz-explication-icon">💡</span> ' + q.q.e;
+      optionsEl.appendChild(explDiv);
+    }
+
     // Bouton suivant
     var nextBtn = document.createElement('button');
     nextBtn.className = 'btn-primary btn-' + _epreuve + ' quiz-next-btn';
     nextBtn.textContent = (_currentIndex + 1 >= _questions.length) ? 'Voir le score →' : 'Question suivante →';
-    document.getElementById('quiz-options').appendChild(nextBtn);
+    optionsEl.appendChild(nextBtn);
 
     nextBtn.addEventListener('click', function () {
       _currentIndex++;
       _renderQuestion();
     });
 
-    // Entrée = suivant
     var enterHandler = function (e) {
       if (e.key === 'Enter') { document.removeEventListener('keydown', enterHandler); nextBtn.click(); }
     };
@@ -255,8 +263,9 @@ var QuizEngine = (function () {
 
     var errorsHtml = errors.map(function (r) {
       return '<div class="quiz-recap-item">' +
-        '<div class="quiz-recap-q">' + r.card.question + '</div>' +
-        '<div class="quiz-recap-a">✓ ' + _firstSentence(r.card.reponse) + '</div>' +
+        '<div class="quiz-recap-q">' + r.q.q + '</div>' +
+        '<div class="quiz-recap-a">✓ ' + r.q.a[0] + '</div>' +
+        (r.q.e ? '<div class="quiz-recap-expl">💡 ' + r.q.e + '</div>' : '') +
       '</div>';
     }).join('');
 
@@ -279,21 +288,10 @@ var QuizEngine = (function () {
         : '<div class="quiz-parfait">Parfait — aucune erreur !</div>') +
 
         '<div class="quiz-score-actions">' +
-          (errors.length ?
-            '<button class="btn-secondary" id="btn-revoir">Revoir les erreurs en flashcards</button>'
-          : '') +
           '<button class="btn-secondary" id="btn-replay">Rejouer</button>' +
           '<a href="#/' + _epreuve + '" class="btn-primary btn-' + _epreuve + '">Retour</a>' +
         '</div>' +
       '</div>';
-
-    if (errors.length) {
-      document.getElementById('btn-revoir').addEventListener('click', function () {
-        var errorCards = errors.map(function (r) { return r.card; });
-        _container.innerHTML = '<div id="fc-container"></div>';
-        FlashcardEngine.start(errorCards, document.getElementById('fc-container'), _epreuve);
-      });
-    }
 
     document.getElementById('btn-replay').addEventListener('click', function () {
       _renderModeSelect();
@@ -329,11 +327,17 @@ var QuizEngine = (function () {
   return {
     start: function (cards, container, epreuve) {
       _cleanup();
-      _cards     = cards;
       _container = container;
       _epreuve   = epreuve;
       _questions = [];
       _results   = [];
+
+      // Filtrer QUIZ_BANK par module correspondant à l'épreuve
+      var module = _moduleMap[epreuve] || '';
+      _bankPool = (typeof QUIZ_BANK !== 'undefined')
+        ? QUIZ_BANK.filter(function (item) { return item.m === module; })
+        : [];
+
       _renderModeSelect();
     }
   };
