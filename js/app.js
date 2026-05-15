@@ -79,6 +79,7 @@ var App = (function () {
           '<div class="epreuve-actions">' +
             '<a href="#/' + key + '/notions" class="btn-primary btn-' + key + '">Flashcards</a>' +
             '<a href="#/' + key + '/methodes" class="btn-secondary">Exercices</a>' +
+            '<a href="#/' + key + '/quiz" class="btn-quiz">⚡ Quiz</a>' +
           '</div>' +
         '</div>';
     });
@@ -196,6 +197,16 @@ var App = (function () {
           '<a href="#/' + code + '/methodes" class="btn-primary btn-' + code + ' btn-full">Voir les exercices</a>' +
         '</div>' +
 
+        '<div class="mode-card">' +
+          '<div class="mode-icon">⚡</div>' +
+          '<h2>Quiz QCM</h2>' +
+          '<p>Questions à choix multiple générées depuis les notions</p>' +
+          '<div class="mode-stats">' +
+            '<div class="mode-total">' + notions.length + ' notions disponibles · 3 modes</div>' +
+          '</div>' +
+          '<a href="#/' + code + '/quiz" class="btn-primary btn-' + code + ' btn-full">Lancer le quiz</a>' +
+        '</div>' +
+
       '</div>'
     );
   }
@@ -255,6 +266,22 @@ var App = (function () {
     );
   }
 
+  // --- Vue: Quiz QCM ---
+
+  function _renderQuiz(code) {
+    var ep = EPREUVES[code];
+    if (!ep) { _renderHome(); return; }
+
+    var notions = ep.notions();
+    if (!notions.length) {
+      _setRoot('<div class="empty-state">Aucune notion disponible pour le quiz.</div>');
+      return;
+    }
+
+    _root.innerHTML = '<div id="quiz-container"></div>';
+    QuizEngine.start(notions, document.getElementById('quiz-container'), code);
+  }
+
   // --- Vue: Exercice individuel ---
 
   function _renderExercice(code, exId) {
@@ -307,6 +334,11 @@ var App = (function () {
 
     if (section === 'notions') {
       _renderNotions(code);
+      return;
+    }
+
+    if (section === 'quiz') {
+      _renderQuiz(code);
       return;
     }
 
